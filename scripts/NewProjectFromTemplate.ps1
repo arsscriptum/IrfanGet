@@ -103,6 +103,30 @@ function LogError{
     Write-Host "$ExceptMsg`n`n" -ForegroundColor DarkYellow
 }  
 
+
+function ShowExceptionDetails{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$true)]
+        [System.Management.Automation.ErrorRecord]$Record,
+        [Parameter(Mandatory=$false)]
+        [switch]$ShowStack
+    )       
+    $formatstring = "{0}`n{1}"
+    $fields = $Record.FullyQualifiedErrorId,$Record.Exception.ToString()
+    $ExceptMsg=($formatstring -f $fields)
+    $Stack=$Record.ScriptStackTrace
+    Write-Host "`n[ERROR] -> " -NoNewLine -ForegroundColor DarkRed; 
+    Write-Host "$ExceptMsg" -ForegroundColor DarkYellow
+    if($ShowStack){
+        Write-Host "--stack begin--" -ForegroundColor DarkGreen
+        Write-Host "$Stack" -ForegroundColor Gray  
+        Write-Host "--stack end--" -ForegroundColor DarkGreen       
+    }
+}  
+
+
 function Invoke-GenerateProject{
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -146,6 +170,9 @@ function Invoke-GenerateProject{
             throw "Missing $file"
         }
         
+        try{
+
+
         $FileContent = Get-Content -Path $file -Raw
         $i = $FileContent.IndexOf('_PROJECTNAME_')
         if($i -ge 0){
@@ -157,7 +184,9 @@ function Invoke-GenerateProject{
             LogMessage "Replacing '_PROJECTGUILD_' to '$Guid'" -d
             $FileContent = $FileContent -Replace '_PROJECTGUID_', $Guid
         }
-        
+        }catch{
+            Write-Error $_
+        }
         
         LogMessage "Saving '$newfile'"
         Set-Content -Path $newfile -Value $FileContent
@@ -178,6 +207,7 @@ try{
     Invoke-GenerateProject -Path $Path -ProjectName $ProjectName -TemplatePath $TemplatePath -Verbose:$Script:Verbose
 }catch{
     $ErrorOccured = $True
+    ShowExceptionDetails $_ -ShowStack
 }finally{
     if($ErrorOccured -eq $False){
         Write-Host "`n[SUCCESS] " -ForegroundColor DarkGreen -n
