@@ -8,12 +8,17 @@
 
 bin/
 bin/**
+tmp/
+tmp/**
 
 obj/
 obj/**
 
 ipch/
 ipch/**
+
+scripts/test
+scripts/test/**
 
 tools/bin
 tools/bin/**

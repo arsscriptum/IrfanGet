@@ -12,6 +12,7 @@
      <UsingWinsock>0</UsingWinsock>
 
      <UsingOpenSSL>1</UsingOpenSSL>
+     <UsingOpenSSL_DLL>0</UsingOpenSSL_DLL>
      <UsingHttpLib>1</UsingHttpLib>
      <UsingJsonLib>1</UsingJsonLib>
 
