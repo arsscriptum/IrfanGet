@@ -6,10 +6,13 @@
   <PropertyGroup Label="ServiceMacros">
      <ProjectRoot>$(ProjectDir)..\</ProjectRoot>
      <TempRoot>$(ProjectDir)</TempRoot>
-     <LIBOPENSSL>C:\Program Files\OpenSSL-Win64\</LIBOPENSSL>
      <UsingQt5>0</UsingQt5>
      <UsingWinsock>0</UsingWinsock>
+     <UsingOpenSSL>1</UsingOpenSSL>
+     <UsingJSMNLib>1</UsingJSMNLib>
+     <UsingHTTPLib>1</UsingHTTPLib>
      <SolutionRootDirectory>$(ProjectDir)..\</SolutionRootDirectory>
+     <ExternalDirectory>$(SolutionRootDirectory)\external</ExternalDirectory>
   </PropertyGroup> 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <CharacterSet>NotSet</CharacterSet>
@@ -35,6 +38,35 @@
   <PropertyGroup Label="WinsockConfig" Condition="'$(UsingWinsock)'=='1'">
     <WinsockLib>wsock32.lib</WinsockLib>
   </PropertyGroup>
+
+
+  <PropertyGroup Label="OpenSSLConfig" Condition="'$(UsingOpenSSL)'=='1'">
+    <OpenSSL_RootDirectory>$(ExternalDirectory)\openssl</OpenSSL_RootDirectory>
+    <OpenSSL_Include_Directory>$(OpenSSL_RootDirectory)\include</OpenSSL_Include_Directory>
+    <OpenSSL_Library_Directory>$(OpenSSL_RootDirectory)\lib</OpenSSL_Library_Directory>
+    <OpenSSL_Binary_Directory>$(OpenSSL_RootDirectory)\bin</OpenSSL_Binary_Directory>
+    <OpenSSL_Defines>CPPHTTPLIB_OPENSSL_SUPPORT</OpenSSL_Defines>
+
+
+
+
+    <OpenSSL_Lib_Static>libssl_static.lib</OpenSSL_Lib_Static>
+    <OpenSSL_Lib>openssl.lib</OpenSSL_Lib>
+    <LibCrypto_Lib_Static>libcrypto_static.lib</LibCrypto_Lib_Static>
+    <LibCrypto_Lib>libcrypto.lib</LibCrypto_Lib>
+  </PropertyGroup>
+
+  <PropertyGroup Label="JSMNLibConfig" Condition="'$(UsingJSMNLib)'=='1'">
+    <JSMNLIB_RootDirectory>$(ExternalDirectory)\jsmn</JSMNLIB_RootDirectory>
+    <JSMN_Defines></JSMN_Defines>
+  </PropertyGroup>
+
+  <PropertyGroup Label="HTTPLibConfig" Condition="'$(UsingHTTPLib)'=='1'">
+    <HTTPLIB_RootDirectory>$(ExternalDirectory)\cpp-httplib</HTTPLIB_RootDirectory>
+    <HTTPLib_Defines></HTTPLib_Defines>
+  </PropertyGroup>
+
+
 
   <ItemDefinitionGroup>
     <QtRcc>
@@ -68,7 +100,7 @@
     </QtRcc>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(LIBOPENSSL)\include;$(ProjectRoot)src;$(ProjectRoot)src\httplib;$(ProjectRoot)src\jsmn;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OpenSSL_Include_Directory);$(HTTPLIB_RootDirectory);$(JSMNLIB_RootDirectory);$(ProjectRoot)src;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;JSMN_STATIC;CCC_STATIC_LINKING;_CRT_SECURE_NO_WARNINGS;CC_WINAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </ClCompile>
@@ -77,9 +109,11 @@
       -->
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(LIBOPENSSL)\lib;$(LIBOPENSSL)\bin;$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libssl_static.lib;libcrypto_static.lib;$(WinsockLib);shlwapi.lib;netapi32.lib;user32.lib;comctl32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OpenSSL_Library_Directory);$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(OpenSSL_Lib_Static);$(LibCrypto_Lib_Static);$(WinsockLib);shlwapi.lib;netapi32.lib;user32.lib;comctl32.lib</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <PreprocessorDefinitions>$(JSMN_Defines);$(HTTPLib_Defines);$(OpenSSL_Defines);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -87,7 +121,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;DEBUG;DEVELOPMENT;DEBUG_INFO;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;DEVELOPMENT;DEBUG_INFO;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -95,7 +129,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='ReleasePList'">
@@ -103,7 +137,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>  
  
