@@ -32,7 +32,7 @@
     <QtExternalDir>$(QtRootPath)</QtExternalDir>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{cd614822-53f6-4a1c-8a46-e463f92100c2}</ProjectGuid>
+    <ProjectGuid>{4d59bbdb-ab21-4e55-b180-bab0a6730091}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>IfFanGet</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>

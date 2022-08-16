@@ -12,15 +12,11 @@
         [Parameter(Mandatory=$true, Position=1)]
         [String]$ProjectName,
         [Parameter(Mandatory=$false)]
-        [String]$TemplatePath = "$PSScriptRoot\Template"
+        [String]$TemplatePath = "$PSScriptRoot\Template",
+        [Parameter(Mandatory=$false)]
+        [switch]$Overwrite
     )  
 
-$Script:Verbose = $False
-if($PSBoundParameters.ContainsKey('Verbose')){
-    $Script:Verbose = $True
-}elseif($Verbose -eq $Null){
-    $Script:Verbose = $False
-}
 
 #===============================================================================
 # ChannelProperties
@@ -131,18 +127,20 @@ function ShowExceptionDetails{
 }  
 
 
-function Invoke-GenerateProject{
+try{
+    $Script:Verbose = $False
+    if($PSBoundParameters.ContainsKey('Verbose')){
+        $Script:Verbose = $True
+    }elseif($Verbose -eq $Null){
+        $Script:Verbose = $False
+    }
 
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        [Parameter(Mandatory=$true, Position=0)]
-        [String]$Path,
-        [Parameter(Mandatory=$true, Position=1)]
-        [String]$ProjectName,
-        [Parameter(Mandatory=$false)]
-        [String]$TemplatePath = "$PSScriptRoot\Template"
-    )  
-
+    $ErrorOccured = $False
+    $TestMode = $False
+    if($PSBoundParameters.ContainsKey('WhatIf')){
+        LogMessage "TESTMODE ENABLED"
+        $TestMode = $true
+    }
 
     $BuildCfgFile = Join-Path $TemplatePath "buildcfg.ini"
     $ProjectFile = Join-Path $TemplatePath "vs\_PROJECTNAME_.vcxproj"
@@ -162,9 +160,15 @@ function Invoke-GenerateProject{
     $Guid = (New-Guid).Guid
     $Guid = "{$Guid}"
 
+
+
     For($x = 0 ; $x -lt $NewProjectFiles.Count ; $x++){
         $newfile = $NewProjectFiles[$x]
         if(Test-Path -Path $newfile -PathType Leaf){
+            if($Overwrite){
+                Remove-Item "$NewProjectFiles[$y]" -Force -ErrorAction Ignore | Out-Null ; LogMessage "DELETED `"$NewProjectFiles[$y]`"" -d;
+                continue;
+            }
             LogMessage "Overwrite `"$newfile`" (y/n/a) " -n
             $a = Read-Host '?'
             while(($a -ne 'y') -And ($a -ne 'n') -And ($a -ne 'a')){
@@ -218,19 +222,6 @@ function Invoke-GenerateProject{
         Set-Content -Path $newfile -Value $FileContent
     }
     
-
-}
-
-$ErrorOccured = $False
-$TestMode = $False
-if($PSBoundParameters.ContainsKey('WhatIf')){
-    LogMessage "TESTMODE ENABLED"
-    $TestMode = $true
-}
-
-
-try{
-    Invoke-GenerateProject -Path $Path -ProjectName $ProjectName -TemplatePath $TemplatePath -Verbose:$Script:Verbose
 }catch{
     $ErrorOccured = $True
     ShowExceptionDetails $_ -ShowStack
