@@ -126,9 +126,9 @@ void __cdecl ConsoleLog(const char *format, ...);
 void __cdecl ConsoleProcess(unsigned int id,const char *name);
 void __cdecl ConsoleProcessDenied(unsigned int id,const char *name);
 void __cdecl ConsoleProcessPath(unsigned int id,const char *name,const char *path);
-void __cdecl ConsoleTitle(const char *format);
-void __cdecl ConsoleInfo(const char *format);
-void __cdecl ConsoleTrace(const char *format, ...);
+void __cdecl ConsoleTitle(const char *format, std::string color = CYAN_UNDERLINED_B);
+void __cdecl ConsoleInfo(const char *format, std::string color = WHITE_UNDERLINED_B);
+void __cdecl ConsoleTrace( std::string color, const char *format, ...);
 # define COUTCMD( ... ) { ConsoleLog(  __VA_ARGS__ );  }	
 
 # define COUTYRL( ... ) { ConsoleOutNoRl(YELLOW_UNDERLINED,  __VA_ARGS__ );  } 
@@ -152,9 +152,9 @@ void __cdecl ConsoleTrace(const char *format, ...);
 
 # define COUTBB( ... )  { ConsoleOut(ANSI_TEXT_COLOR_BLACK,  __VA_ARGS__ );  }	
 
+# define COUTTITLE( x ) { ConsoleTitle( x );  } 
+# define COUTINFO( x ) { ConsoleInfo( x,CONSOLE_COLOR_BKGRND_WHITE_BLUE  );  }	
 
-# define COUTTITLE( x ) { ConsoleTitle(  x );  }	
-# define COUTINFO( ... ) { ConsoleOut( CONSOLE_COLOR_BKGRND_WHITE, __VA_ARGS__ );  }	
 # define LOG_CONSOLE( color, ... ) { ConsoleOut( color, __VA_ARGS__ );  }	
 
 #ifndef DEJA_DISABLED

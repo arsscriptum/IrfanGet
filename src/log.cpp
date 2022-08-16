@@ -159,20 +159,21 @@ void __cdecl ConsoleProcessPath(unsigned int id,const char *name,const char *pat
 	
 	std::clog << FormatPath << path << "\n";
 }
-void __cdecl ConsoleTitle(const char *title)
+void __cdecl ConsoleTitle( const char *title, std::string color )
 {
-	EndOfLineEscapeTag FormatTitle{ CONSOLE_COLOR_MAGENTA_BRIGHT, ANSI_TEXT_COLOR_RESET };
+	EndOfLineEscapeTag FormatTitle{ color, ANSI_TEXT_COLOR_RESET };
 	EndOfLineEscapeTag FormatName{ BLACK_UNDERLINED, ANSI_TEXT_COLOR_RESET };
 	std::clog << FormatTitle << title;
 	std::clog << FormatName << " ";
 }
-void __cdecl ConsoleInfo(const char *title)
+void __cdecl ConsoleInfo(const char *title, std::string color)
 {
-	EndOfLineEscapeTag FormatTitle{ WHITE_UNDERLINED_B, ANSI_TEXT_COLOR_RESET };
+	EndOfLineEscapeTag FormatTitle{ color, ANSI_TEXT_COLOR_RESET };
 	EndOfLineEscapeTag FormatName{ BLACK_UNDERLINED, ANSI_TEXT_COLOR_RESET };
 	std::clog << FormatTitle << title;
 	std::clog << FormatName << " ";
 }
+
 
 //==============================================================================
 // SystemDebugOutput
