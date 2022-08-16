@@ -38,6 +38,7 @@ using namespace std;
 
 void banner();
 void usage();
+void logError(const char * msg);
 char* parseJson(const char* js, int len);
 vector<string> split(const string& s, char delim);
 static int jsoneq(const char* json, jsmntok_t* tok, const char* s);
@@ -47,7 +48,7 @@ bool downloadFile(string dwl_url, string fullUrl, string outFile, bool optVerbos
 char* getDlUrl(string filename, string api_url, bool optVerbose);
 string log(const Request& req, const Response& res);
 void writeFileBytes(const char* filename, const char* buffer, int size);
-
+bool testConnection(const char * host, int port, time_t conn_timeout_sec = 5, time_t read_timeout_sec = 5, time_t write_timeout_sec = 5);
 
 
 int main(int argc, TCHAR** argv, TCHAR envp)
@@ -89,13 +90,11 @@ int main(int argc, TCHAR** argv, TCHAR envp)
 		usage();
 		return 0;
 	}
-
 	string destinationPath = ".";
 	if (optPath) {
 		destinationPath = inputParser->getCmdOption("-p");
 	}
-	COUTRS("destinationPath. %s\n", destinationPath.c_str());
-            
+  
 	auto my_url = "https://arsscriptum.github.io";
 	auto api_url = "https://api.fosshub.com";	
 	auto dwl_url = "https://download.fosshub.com";	
@@ -105,6 +104,24 @@ int main(int argc, TCHAR** argv, TCHAR envp)
     auto project_id = "5b8d1f5659eee027c3d7883a";
 	
 	string dest = destinationPath + "\\" + filename;
+
+	bool strApiConnected = testConnection("api.fosshub.com",443);
+	COUTMM("testConnection on %s --> ", "api.fosshub.com");
+	COUTY("%s", strApiConnected?"CONNECTION SUCCESS":"CONNECTION FAILED");
+
+	if (!strApiConnected){
+		logError("Server unreachable. Exiting...");
+		return -1;
+	}
+ 
+	COUTMM("testConnection on %s --> ", "download.fosshub.com");
+	bool strDownloadConnected = testConnection("download.fosshub.com",443);
+	COUTY("%s", strDownloadConnected?"CONNECTION SUCCESS":"CONNECTION FAILED");
+	if (!strDownloadConnected){
+		logError("Server unreachable. Exiting...");
+		return -1;
+	}
+ 
 	// ==================================================================
 	// GET iview460_x64_setup.exe
 	// ==================================================================
@@ -115,8 +132,10 @@ int main(int argc, TCHAR** argv, TCHAR envp)
 	}
 	if (fullUrl) {
 		bool downloaded = downloadFile(dwl_url, fullUrl, dest, optVerbose);
-		if (!downloaded)
+		if (!downloaded){
+			logError("Download failed. Exit...");
 			return -1;
+		}
 	}
 
 	// ==================================================================
@@ -132,8 +151,10 @@ int main(int argc, TCHAR** argv, TCHAR envp)
 	
 	if (fullUrl) {
 		bool downloaded = downloadFile(dwl_url, fullUrl, dest, optVerbose);
-		if (!downloaded)
+		if (!downloaded){
+			logError("Download failed. Exit...");
 			return -2;
+		}
 	}
 
 	return 0;
@@ -294,7 +315,11 @@ char* getDlUrl(string filename, string api_url, bool optVerbose) {
 		COUTMS("=== Request Parameters ===");
 		COUTM("%s", strParams.c_str());
 	}
-	auto res = httplib::Client(api_url).Post("/download", params);
+	httplib::Client cli(api_url);
+	cli.set_connection_timeout(5,0);
+	cli.set_read_timeout(5,0);
+	cli.set_keep_alive(true);
+	auto res = cli.Post("/download", params);
 
 	if (res->status != 200) {
 		COUTRS("Error %d.\n", res->status);
@@ -356,6 +381,9 @@ bool downloadFile(string dwl_url, string fullUrl, string outFile, bool optVerbos
 					COUTM("%s", l.c_str());
 				});
 		}
+		cli.set_connection_timeout(5,0);
+		cli.set_read_timeout(5,0);
+		cli.set_keep_alive(true);
 		auto getres = cli.Get(str, h,
 			[&](const char* data, size_t data_length) {
 				rcvdata.append(data, data_length);
@@ -374,4 +402,28 @@ bool downloadFile(string dwl_url, string fullUrl, string outFile, bool optVerbos
 	}
 	catch (...) { COUTRS("Caught Error.\n"); result = false; }
 	return result;
+}
+
+
+void logError(const char * msg){
+	COUTMM("[ERROR] ");
+	COUTY("%s", msg);
+}
+
+
+// Sends a raw request to a server listening at HOST:PORT.
+bool testConnection(const char * host, int port, time_t conn_timeout_sec, time_t read_timeout_sec, time_t write_timeout_sec) {
+  auto error = Error::Success;
+
+  auto client_sock = detail::create_client_socket(
+      host, "", port, AF_UNSPEC, false, nullptr,
+      conn_timeout_sec, 0,
+      read_timeout_sec, 0,
+      write_timeout_sec, 0, std::string(), error);
+
+  if (client_sock == INVALID_SOCKET) { return false; }
+
+  detail::close_socket(client_sock);
+
+  return true;
 }

@@ -63,7 +63,7 @@
 
   <PropertyGroup Label="HTTPLibConfig" Condition="'$(UsingHTTPLib)'=='1'">
     <HTTPLIB_RootDirectory>$(ExternalDirectory)\cpp-httplib</HTTPLIB_RootDirectory>
-    <HTTPLib_Defines></HTTPLib_Defines>
+    <HTTPLib_Defines>USING_HTTPLIB</HTTPLib_Defines>
   </PropertyGroup>
 
 
