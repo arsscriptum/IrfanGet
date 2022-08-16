@@ -24,6 +24,8 @@ goto :init
     set "__lib_out=%__scripts_root%\batlibs\out.bat"
     ::*** This is the important line ***
     set "__build_cfg=%__script_path%buildcfg.ini"
+    set "__bin_path=%__script_path%bin"
+    set "__tmp_path=%__script_path%vs\___temp_compilation_files"
     set "__build_cancelled=0"
     goto :validate
 
@@ -43,6 +45,20 @@ goto :init
     echo. https://github.com/codecastor/BuildAutomation
     goto :eof
 
+
+
+:clean_tmp
+    call %__lib_out% :__out_l_red " Cleaning : %__tmp_path%"  
+    echo.
+    rmdir "%__tmp_path%" /S /Q
+    goto :eof
+
+:clean_bin
+    call %__lib_out% :__out_l_red " Cleaning : %clean_bin%"  
+    echo.
+    :: rmdir "P:\Development\IrfanGet\bin" /S /Q
+    rmdir "%__bin_path%" /S /Q
+    goto :eof
 
 :read_script_root
     set regpath=%OrganizationHKCU::=%
@@ -116,7 +132,9 @@ goto :init
 ::   Build
 :: ==============================================================================
 :build
-	echo "%__target%"
+    call :clean_bin
+    call :clean_tmp
+	
 	if "%__target%" == "clean" (
 		call :clean
 		goto :finished

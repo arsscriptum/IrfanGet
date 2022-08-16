@@ -26,6 +26,9 @@
 #include <iostream>
 #include <sstream>
 
+#ifdef USING_HTTPLIB
+#pragma message( "USING HTTPLIB" )
+#endif
 
 using namespace httplib;
 using namespace std;

@@ -71,16 +71,16 @@
     <TargetName>IfFanGet</TargetName>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleasePList|x64'">
+  <!--<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleasePList|x64'">
     <PostBuildEvent>
       <Command>copy $(OutDir)$(TargetFileName) $(ToolsRoot)</Command>
-    </PostBuildEvent>
+    </PostBuildEvent> 
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PostBuildEvent>
       <Command>copy $(OutDir)$(TargetFileName) $(ToolsRoot)</Command>
     </PostBuildEvent>
-  </ItemDefinitionGroup>
+  </ItemDefinitionGroup>-->
   <ItemGroup>
     <ClCompile Include="$(ProjectRoot)src\main.cpp" />
     <ClCompile Include="$(ProjectRoot)src\stdafx.cpp">
@@ -110,10 +110,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Target Name="CustomClean" BeforeTargets="AfterClean">
+  <Target Name="CustomClean" BeforeTargets="BeforeBuild">
     <Message Text="Custom Clean" Importance="high" />
     <ItemGroup>
-      <_CustomFilesToDelete Include="$(OutDir)\$(RootNamespace).*" />
+      <_CustomFilesToDelete Include="$(ProjectRoot)\bin\x64\Release\*" />
     </ItemGroup>
     <Delete Files="@(_CustomFilesToDelete)" />
   </Target>
