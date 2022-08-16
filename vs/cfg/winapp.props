@@ -6,16 +6,9 @@
   <PropertyGroup Label="ServiceMacros">
      <ProjectRoot>$(ProjectDir)..\</ProjectRoot>
      <TempRoot>$(ProjectDir)</TempRoot>
-     <ExternalsPath>$(ProjectRoot)\external</ExternalsPath>
-     <LIBOPENSSL>$(ExternalsPath)\openssl</LIBOPENSSL>
+     <LIBOPENSSL>C:\Program Files\OpenSSL-Win64\</LIBOPENSSL>
      <UsingQt5>0</UsingQt5>
      <UsingWinsock>0</UsingWinsock>
-
-     <UsingOpenSSL>1</UsingOpenSSL>
-     <UsingOpenSSL_DLL>0</UsingOpenSSL_DLL>
-     <UsingHttpLib>1</UsingHttpLib>
-     <UsingJsonLib>1</UsingJsonLib>
-
      <SolutionRootDirectory>$(ProjectDir)..\</SolutionRootDirectory>
   </PropertyGroup> 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -42,23 +35,6 @@
   <PropertyGroup Label="WinsockConfig" Condition="'$(UsingWinsock)'=='1'">
     <WinsockLib>wsock32.lib</WinsockLib>
   </PropertyGroup>
-
-  <PropertyGroup Label="OpenSSLConfig" Condition="'$(UsingOpenSSL)'=='1'">
-    <OpenSSL_Lib>libssl_static.lib</OpenSSL_Lib>
-    <LibCrypto_Lib>libcrypto_static.lib</LibCrypto_Lib>
-    <OpenSSLLib_Defines>USING_LIBOPENSSL</OpenSSLLib_Defines>
-  </PropertyGroup>
-
-  <PropertyGroup Label="HTTPLibConfig" Condition="'$(UsingHttpLib)'=='1'">
-    <!-- To enable SSL in the HTTPLIB Library -->
-    <HTTPLib_Defines>USING_LIBHTTP;CPPHTTPLIB_OPENSSL_SUPPORT</HTTPLib_Defines>
-  </PropertyGroup>
-
-  <PropertyGroup Label="JSONLibConfig" Condition="'$(UsingJsonLib)'=='1'">
-    <!-- To enable static linking for JSON lib Library -->
-    <JSONLib_Defines>USING_JSMN;JSMN_STATIC</JSONLib_Defines>
-  </PropertyGroup>
-
 
   <ItemDefinitionGroup>
     <QtRcc>
@@ -93,7 +69,7 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(LIBOPENSSL)\include;$(ProjectRoot)src;$(ProjectRoot)src\httplib;$(ProjectRoot)src\jsmn;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>$(OpenSSLLib_Defines);$(HTTPLib_Defines);$(JSONLib_Defines);CCC_STATIC_LINKING;_CRT_SECURE_NO_WARNINGS;CC_WINAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;JSMN_STATIC;CCC_STATIC_LINKING;_CRT_SECURE_NO_WARNINGS;CC_WINAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </ClCompile>
     <!-- 
@@ -101,8 +77,8 @@
       -->
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(LIBOPENSSL)\lib;$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(WinsockLib);shlwapi.lib;netapi32.lib;user32.lib;comctl32.lib;$(LibCrypto_Lib);$(OpenSSL_Lib)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(LIBOPENSSL)\lib;$(LIBOPENSSL)\bin;$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libssl_static.lib;libcrypto_static.lib;$(WinsockLib);shlwapi.lib;netapi32.lib;user32.lib;comctl32.lib</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
@@ -111,7 +87,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>DEBUG;DEVELOPMENT;DEBUG_INFO;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;DEBUG;DEVELOPMENT;DEBUG_INFO;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -119,7 +95,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='ReleasePList'">
@@ -127,19 +103,10 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;RELEASE;DEVELOPMENT;DEBUG_INFO;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>  
-  <Target Name="CopyDlls" BeforeTargets="AfterBuild">
-    <Message Text="COPY DLLs" Importance="high" />
-    <ItemGroup>
-      <_DllFilesToCopy Include="$(ExternalsPath)\openssl\*.dll" />
-    </ItemGroup>
-     <Copy
-            SourceFiles="@(_DllFilesToCopy)"
-            DestinationFiles="$(OutDir)"
-        />
-  </Target>
+ 
 
   <Target Name="PrintBuildConfig" BeforeTargets="InitializeBuildStatus">
     <Message Text="================================================================================================" />
@@ -154,10 +121,8 @@
     <Message Text="OptimizeReferences: $(OptimizeReferences)." />
     <Message Text="IntrinsicFunctions: $(IntrinsicFunctions)." />
     <Message Text="FunctionLevelLinking: $(FunctionLevelLinking)." />
-    <Message Text="UsingOpenSSL: $(UsingOpenSSL)." />
-    <Message Text="UsingHttpLib: $(UsingHttpLib)." />
-    <Message Text="UsingJsonLib: $(UsingJsonLib)." />
-
     <Message Text="================================================================================================" />
   </Target>
 </Project>
+
+

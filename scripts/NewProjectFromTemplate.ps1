@@ -62,7 +62,11 @@ function LogMessage{
         Write-Host "[TESTMODE] " -f DarkMagenta -NoNewLine
         Write-Host "$Message" -f 'DarkGray' -NoNewLine:$NoNewLine
     }else{
-        Write-Host "[$($Script:LogProps.Channel)] " -f $($Script:LogProps.TitleColor) -NoNewLine
+        if($Detailed){
+            Write-Host "[$($Script:LogProps.Channel) VERBOSE] " -f 'Cyan' -NoNewLine
+        }else{
+            Write-Host "[$($Script:LogProps.Channel)] " -f $($Script:LogProps.TitleColor) -NoNewLine
+        }
         Write-Host "$Message" -f $($Script:LogProps.MessageColor) -NoNewLine:$NoNewLine
     }
     
@@ -140,21 +144,44 @@ function Invoke-GenerateProject{
     )  
 
 
-    $ProjectFile = Join-Path $TemplatePath "_PROJECTNAME_.vcxproj"
-    $FiltersFile = Join-Path $TemplatePath "_PROJECTNAME_.vcxproj.filters"
-    $ConfigsFile = Join-Path $TemplatePath "cfg\winapp.props"
-    $DejaInsFile = Join-Path $TemplatePath "cfg\dejainsight.props"
+    $BuildCfgFile = Join-Path $TemplatePath "buildcfg.ini"
+    $ProjectFile = Join-Path $TemplatePath "vs\_PROJECTNAME_.vcxproj"
+    $FiltersFile = Join-Path $TemplatePath "vs\_PROJECTNAME_.vcxproj.filters"
+    $ConfigsFile = Join-Path $TemplatePath "vs\cfg\winapp.props"
+    $DejaInsFile = Join-Path $TemplatePath "vs\cfg\dejainsight.props"
 
-    $NewProjectFile = Join-Path $Path "$($ProjectName).vcxproj"
-    $NewFiltersFile = Join-Path $Path "$($ProjectName).vcxproj.filters"
-    
-    $ProjectFiles = @($ProjectFile, $FiltersFile, $ConfigsFile, $DejaInsFile)
-    $NewProjectFiles = @($NewProjectFile, $NewFiltersFile, $ConfigsFile, $DejaInsFile )
+    $NewBuildCfgFile = Join-Path $Path "buildcfg.ini"
+    $NewProjectFile = Join-Path $Path "vs\$($ProjectName).vcxproj"
+    $NewFiltersFile = Join-Path $Path "vs\$($ProjectName).vcxproj.filters"
+    $NewConfigsFile = Join-Path $Path "vs\cfg\winapp.props"
+    $NewDejaInsFile = Join-Path $Path "vs\cfg\dejainsight.props"
+
+    $ProjectFiles = @($BuildCfgFile,$ProjectFile, $FiltersFile, $ConfigsFile, $DejaInsFile)
+    $NewProjectFiles = @($NewBuildCfgFile,$NewProjectFile, $NewFiltersFile, $NewConfigsFile, $NewDejaInsFile )
     
     $Guid = (New-Guid).Guid
     $Guid = "{$Guid}"
 
-    For($x = 0 ; $x -lt 3 ; $x++){
+    For($x = 0 ; $x -lt $NewProjectFiles.Count ; $x++){
+        $newfile = $NewProjectFiles[$x]
+        if(Test-Path -Path $newfile -PathType Leaf){
+            LogMessage "Overwrite `"$newfile`" (y/n/a) " -n
+            $a = Read-Host '?'
+            while(($a -ne 'y') -And ($a -ne 'n') -And ($a -ne 'a')){
+                LogMessage "Please enter `"y`" , `"n`" or `"a`""
+                LogMessage "Overwrite `"$newfile`" (y/n/a) " -n
+                $a = Read-Host '?'
+            }
+            if($a -eq 'a'){  
+                For($y = 0 ; $y -lt $NewProjectFiles.Count ; $y++){
+                    Remove-Item "$NewProjectFiles[$y]" -Force -ErrorAction Ignore | Out-Null ; LogMessage "DELETED `"$NewProjectFiles[$y]`"" -d;
+                }
+                break;
+            }
+            elseif($a -ne 'y'){ throw "File $newfile already exists!" ; }else{ Remove-Item $newfile -Force -ErrorAction Ignore | Out-Null ; LogMessage "DELETED `"$newfile`"" -d;}
+        }
+    }
+    For($x = 0 ; $x -lt $ProjectFiles.Count ; $x++){
         $file = $ProjectFiles[$x]
         $newfile = $NewProjectFiles[$x]
         LogMessage "Processing '$file'" -d
@@ -170,10 +197,12 @@ function Invoke-GenerateProject{
             throw "Missing $file"
         }
         
-        try{
 
-
+        LogMessage "Get-Content -Path $file -Raw" -d
         $FileContent = Get-Content -Path $file -Raw
+        if($FileContent -eq $null){ throw "INVALID File $file" }
+
+        LogMessage "`$FileContent.IndexOf('_PROJECTNAME_')" -d
         $i = $FileContent.IndexOf('_PROJECTNAME_')
         if($i -ge 0){
             LogMessage "Replacing '_PROJECTNAME_' to '$ProjectName'" -d
@@ -183,9 +212,6 @@ function Invoke-GenerateProject{
         if($i -ge 0){
             LogMessage "Replacing '_PROJECTGUILD_' to '$Guid'" -d
             $FileContent = $FileContent -Replace '_PROJECTGUID_', $Guid
-        }
-        }catch{
-            Write-Error $_
         }
         
         LogMessage "Saving '$newfile'"
