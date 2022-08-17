@@ -32,7 +32,7 @@ try{
         $TestMode = $true
     }
     
-    $DependenciesPath = "$PSScriptRoot\ps"
+    $DependenciesPath = "$PSScriptRoot\tools"
     $DependencyScript = Join-Path $DependenciesPath "IrFanFuncs.ps1"
     
 
