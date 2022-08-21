@@ -51,8 +51,6 @@ void writeFileBytes(const char* filename, const char* buffer, int size);
 bool testConnection(const char * host, int port, time_t conn_timeout_sec = 5, time_t read_timeout_sec = 5, time_t write_timeout_sec = 5);
 
 
-void testLogFunctions(const char * msg);
-
 int main(int argc, TCHAR** argv, TCHAR envp)
 {
 
@@ -98,9 +96,6 @@ int main(int argc, TCHAR** argv, TCHAR envp)
 	}
 
 
-	testLogFunctions(destinationPath.c_str());
-	return 0;
-  
 	auto my_url = "https://arsscriptum.github.io";
 	auto api_url = "https://api.fosshub.com";	
 	auto dwl_url = "https://download.fosshub.com";	
@@ -409,15 +404,6 @@ bool downloadFile(string dwl_url, string fullUrl, string outFile, bool optVerbos
 	catch (...) { COUTRS("Caught Error.\n"); result = false; }
 	return result;
 }
-
-void testLogFunctions(const char * msg){
-	COUTTITLE("TITLE MESSAGE\n");
-
-
-	COUTINFO("VERY IMPORTANT INFORMATION\n");
-	
-}
-
 
 
 
